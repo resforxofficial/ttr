@@ -1,40 +1,81 @@
+.battle-wrapper {
+    display: flex;
+    gap: 20px;
+    height: 600px;
+    /* 전체 높이 고정 */
+}
+
+/* 배틀 화면 */
 .battle-container {
-    text-align: center;
-    font-family: Arial, sans-serif;
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background: #f5f5f5;
 }
 
 .entities-row {
     display: flex;
-    justify-content: center;
-    /* 중앙 정렬 */
-    gap: 50px;
-    /* 플레이어와 적 사이 간격 */
-    margin-top: 20px;
+    gap: 20px;
 }
 
 .entity-container {
-    text-align: center;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: #fff;
 }
 
 .hp-bar {
-    background: #ddd;
+    width: 100%;
     height: 20px;
-    width: 150px;
-    /* 가로폭 조금 줄임 */
-    margin: 5px auto;
-    border-radius: 8px;
+    background: #ddd;
+    border-radius: 10px;
     overflow: hidden;
+    margin-top: 5px;
 }
 
 .hp-fill {
     height: 100%;
-    transition: width 0.2s ease;
+    transition: width 0.3s ease;
 }
 
 .player-fill {
-    background: green;
+    background: #4dabf7;
 }
 
 .enemy-fill {
-    background: red;
+    background: #f55;
+}
+
+/* 사이드바 */
+.sidebar {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 로그 고정 */
+.logs {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: #fff;
+    overflow-y: auto;
+}
+
+/* 스탯 */
+.player-stats {
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.player-stats button {
+    margin-right: 5px;
+    margin-top: 5px;
 }
