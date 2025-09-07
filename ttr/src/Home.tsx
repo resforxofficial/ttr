@@ -2,108 +2,120 @@ import { useEffect } from "react";
 import { useBattleStore } from "./zuct";
 
 export default function RealTimeBattle() {
-  const {
-    attackEnemy,
-    attackPlayer,
-    isGameOver,
-    resetGame,
-    upgradeAttack,
-    upgradeMaxHp,
-    player,
-    enemy,
-    logs,
-  } = useBattleStore();
+    const {
+        attackEnemy,
+        attackPlayer,
+        isGameOver,
+        resetGame,
+        upgradeAttack,
+        upgradeMaxHp,
+        player,
+        enemy,
+        logs,
+        healPlayer,
+    } = useBattleStore();
 
-  // 플레이어 자동 공격
-  useEffect(() => {
-    if (isGameOver) return;
-    const interval = setInterval(() => {
-      attackEnemy();
-    }, player.attackSpeed);
-    return () => clearInterval(interval);
-  }, [attackEnemy, player.attackSpeed, isGameOver]);
+    // 플레이어 자동 공격
+    useEffect(() => {
+        if (isGameOver) return;
+        const interval = setInterval(() => {
+            attackEnemy();
+        }, player.attackSpeed);
+        return () => clearInterval(interval);
+    }, [attackEnemy, player.attackSpeed, isGameOver]);
 
-  // 적 자동 공격
-  useEffect(() => {
-    if (isGameOver) return;
-    const interval = setInterval(() => {
-      attackPlayer();
-    }, enemy.attackSpeed);
-    return () => clearInterval(interval);
-  }, [attackPlayer, enemy.attackSpeed, isGameOver]);
+    // 적 자동 공격
+    useEffect(() => {
+        if (isGameOver) return;
+        const interval = setInterval(() => {
+            attackPlayer();
+        }, enemy.attackSpeed);
+        return () => clearInterval(interval);
+    }, [attackPlayer, enemy.attackSpeed, isGameOver]);
 
-  return (
-    <div className="battle-wrapper">
-      {/* 왼쪽: 배틀 화면 */}
-      <div className="battle-container">
-        <h2>실시간 자동 전투</h2>
+    useEffect(() => {
+        if (isGameOver) return;
+        const interval = setInterval(() => {
+            healPlayer(1); // 초당 1씩 회복
+        }, 500);
 
-        {isGameOver ? (
-          <div className="game-over">
-            <h3>게임 오버!</h3>
-            <button onClick={resetGame}>다시 시작</button>
-          </div>
-        ) : (
-          <div className="entities-row">
-            <div className="entity-container">
-              <h3>플레이어</h3>
-              <p>
-                체력: {player.hp} / {player.maxHp}
-              </p>
-              <div className="hp-bar">
-                <div
-                  className="hp-fill player-fill"
-                  style={{ width: `${(player.hp / player.maxHp) * 100}%` }}
-                />
-              </div>
+        return () => clearInterval(interval);
+    }, [isGameOver, healPlayer]); // player.hp 넣지 않음!
+
+    return (
+        <div className="battle-wrapper">
+            {/* 왼쪽: 배틀 화면 */}
+            <div className="battle-container">
+                <h2>실시간 자동 전투</h2>
+
+                {isGameOver ? (
+                    <div className="game-over">
+                        <h3>게임 오버!</h3>
+                        <button onClick={resetGame}>다시 시작</button>
+                    </div>
+                ) : (
+                    <div className="entities-row">
+                        <div className="entity-container">
+                            <h3>플레이어</h3>
+                            <p>
+                                체력: {player.hp} / {player.maxHp}
+                            </p>
+                            <div className="hp-bar">
+                                <div
+                                    className="hp-fill player-fill"
+                                    style={{ width: `${(player.hp / player.maxHp) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="entity-container">
+                            <h3>
+                                {enemy.name} Lv. {enemy.level}
+                            </h3>
+                            <p>
+                                체력: {enemy.hp} / {enemy.maxHp}
+                            </p>
+                            <div className="hp-bar">
+                                <div
+                                    className="hp-fill enemy-fill"
+                                    style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="entity-container">
-              <h3>{enemy.name} Lv. {enemy.level}</h3>
-              <p>
-                체력: {enemy.hp} / {enemy.maxHp}
-              </p>
-              <div className="hp-bar">
-                <div
-                  className="hp-fill enemy-fill"
-                  style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }}
-                />
-              </div>
+            {/* 오른쪽: 로그 + 스탯 */}
+            <div className="sidebar">
+                {/* 전투 로그 */}
+                <div className="logs">
+                    <h3>전투 로그</h3>
+                    <div className="log-list">
+                        {logs.slice(-10).map((log, idx) => (
+                            <p key={idx}>{log}</p>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 플레이어 스탯 */}
+                <div className="player-stats">
+                    <h3>플레이어 스탯</h3>
+                    <p>
+                        공격력: {player.attack} (Lv.{player.attackLevel})
+                    </p>
+                    <p>
+                        최대 체력: {player.maxHp} (Lv.{player.maxHpLevel})
+                    </p>
+                    <p>남은 스탯 포인트: {player.statPoints}</p>
+                    <button onClick={upgradeAttack} disabled={player.statPoints <= 0}>
+                        공격력 +1
+                    </button>
+                    <button onClick={upgradeMaxHp} disabled={player.statPoints <= 0}>
+                        최대 체력 +5
+                    </button>
+                </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* 오른쪽: 로그 + 스탯 */}
-      <div className="sidebar">
-        {/* 전투 로그 */}
-        <div className="logs">
-          <h3>전투 로그</h3>
-          <div className="log-list">
-            {logs.slice(-10).map((log, idx) => (
-              <p key={idx}>{log}</p>
-            ))}
-          </div>
         </div>
-
-        {/* 플레이어 스탯 */}
-        <div className="player-stats">
-          <h3>플레이어 스탯</h3>
-          <p>
-            공격력: {player.attack} (Lv.{player.attackLevel})
-          </p>
-          <p>
-            최대 체력: {player.maxHp} (Lv.{player.maxHpLevel})
-          </p>
-          <p>남은 스탯 포인트: {player.statPoints}</p>
-          <button onClick={upgradeAttack} disabled={player.statPoints <= 0}>
-            공격력 +1
-          </button>
-          <button onClick={upgradeMaxHp} disabled={player.statPoints <= 0}>
-            최대 체력 +5
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }

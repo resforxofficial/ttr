@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { josa } from "es-hangul";
 
 // 레벨별 적 이름
 const enemyNames = ["슬라임", "고블린", "오크", "트롤", "마법사", "드래곤"];
@@ -10,16 +11,18 @@ interface Entity {
     maxHp: number;
     attack: number;
     attackSpeed: number;
-    level?: number;
-    name?: string;
+    level: number;
+    name: string;
+}
+
+interface Player extends Entity {
+    statPoints: number;
+    attackLevel: number;
+    maxHpLevel: number;
 }
 
 interface BattleState {
-    player: Entity & {
-        statPoints: number; // 스탯 포인트
-        attackLevel: number;
-        maxHpLevel: number;
-    };
+    player: Player;
     enemy: Entity;
     isGameOver: boolean;
     logs: string[];
@@ -28,7 +31,10 @@ interface BattleState {
     resetGame: () => void;
     upgradeAttack: () => void;
     upgradeMaxHp: () => void;
+    healPlayer: (amount: number) => void;
 }
+
+const MAX_LOGS = 50;
 
 export const useBattleStore = create<BattleState>((set) => ({
     player: {
@@ -39,6 +45,8 @@ export const useBattleStore = create<BattleState>((set) => ({
         statPoints: 0,
         attackLevel: 0,
         maxHpLevel: 0,
+        level: 1,
+        name: "플레이어",
     },
     enemy: {
         hp: 20,
@@ -62,7 +70,7 @@ export const useBattleStore = create<BattleState>((set) => ({
             ];
 
             if (newHp <= 0) {
-                // 몬스터 처치 시 스탯 포인트 2 지급
+                // 🔹 다음 몬스터 세팅
                 const nextLevel = (state.enemy.level || 1) + 1;
                 const newEnemy = {
                     level: nextLevel,
@@ -72,97 +80,119 @@ export const useBattleStore = create<BattleState>((set) => ({
                     attack: 3 + nextLevel,
                     attackSpeed: 1000,
                 };
+
+                // 🔹 잃은 체력의 30% 회복
+                const missingHp = state.player.maxHp - state.player.hp;
+                const healAmount = Math.floor(missingHp * 0.3);
+                const healedHp = Math.min(
+                    state.player.hp + healAmount,
+                    state.player.maxHp
+                );
+
+                newLogs.push(`${state.enemy.name} 처치!`);
+                newLogs.push(`플레이어 체력 ${healAmount} 회복!`);
                 newLogs.push(`${newEnemy.name} 등장! 레벨 ${nextLevel}`);
                 newLogs.push(`플레이어에게 스탯 포인트 +2`);
 
                 return {
                     ...state,
                     enemy: newEnemy,
-                    player: { ...state.player, statPoints: state.player.statPoints + 2 },
+                    player: {
+                        ...state.player,
+                        hp: healedHp,
+                        statPoints: state.player.statPoints + 2,
+                    },
                     logs: newLogs,
                 };
             }
 
-            return { ...state, enemy: { ...state.enemy, hp: newHp }, logs: newLogs };
+            return {
+                ...state,
+                enemy: { ...state.enemy, hp: newHp },
+                logs: newLogs,
+            };
         }),
 
     attackPlayer: () =>
         set((state) => {
             if (state.isGameOver) return state;
+
             const newHp = state.player.hp - state.enemy.attack;
             const newLogs = [
                 ...state.logs,
-                `${state.enemy.name}가 플레이어에게 ${state.enemy.attack} 피해!`,
+                `${josa(state.enemy.name, "이/가")} 플레이어에게 ${state.enemy.attack
+                } 피해!`,
             ];
 
             if (newHp <= 0) {
-                newLogs.push("플레이어가 사망했습니다!");
                 return {
                     ...state,
                     player: { ...state.player, hp: 0 },
                     isGameOver: true,
-                    logs: newLogs,
+                    logs: [...newLogs, "플레이어가 사망했습니다!"].slice(-MAX_LOGS),
                 };
             }
 
             return {
                 ...state,
                 player: { ...state.player, hp: newHp },
-                logs: newLogs,
+                logs: newLogs.slice(-MAX_LOGS),
             };
         }),
 
     resetGame: () =>
-        set(() => ({
+        set((state) => ({
             player: {
-                hp: 50,
-                maxHp: 50,
-                attack: 5,
-                attackSpeed: 1000,
-                statPoints: 0,
-                attackLevel: 0,
-                maxHpLevel: 0,
+                ...state.player,
+                hp: state.player.maxHp, // 체력만 최대치로 회복
             },
             enemy: {
-                hp: 20,
-                maxHp: 20,
-                attack: 3,
-                attackSpeed: 1000,
-                level: 1,
-                name: "슬라임",
+                ...state.enemy,
+                hp: state.enemy.maxHp, // 적 체력도 다시 채움
             },
             isGameOver: false,
             logs: ["게임을 다시 시작합니다!"],
         })),
 
-    // 스탯 업그레이드 함수
     upgradeAttack: () =>
         set((state) => {
             if (state.player.statPoints <= 0) return state;
+            const newLogs = [...state.logs, `플레이어 공격력 +1`];
             return {
                 ...state,
                 player: {
                     ...state.player,
                     attack: state.player.attack + 1,
-                    statPoints: state.player.statPoints - 1,
                     attackLevel: state.player.attackLevel + 1,
+                    statPoints: state.player.statPoints - 1,
                 },
-                logs: [...state.logs, `플레이어 공격력 +1`],
+                logs: newLogs.slice(-MAX_LOGS),
             };
         }),
 
     upgradeMaxHp: () =>
         set((state) => {
             if (state.player.statPoints <= 0) return state;
+            const newLogs = [...state.logs, `플레이어 최대 체력 +5`];
             return {
                 ...state,
                 player: {
                     ...state.player,
                     maxHp: state.player.maxHp + 5,
-                    statPoints: state.player.statPoints - 1,
                     maxHpLevel: state.player.maxHpLevel + 1,
+                    statPoints: state.player.statPoints - 1,
                 },
-                logs: [...state.logs, `플레이어 최대 체력 +5`],
+                logs: newLogs.slice(-MAX_LOGS),
+            };
+        }),
+
+    // 스토어 내부에 추가
+    healPlayer: (amount: number) =>
+        set((state) => {
+            const newHp = Math.min(state.player.hp + amount, state.player.maxHp);
+            return {
+                ...state,
+                player: { ...state.player, hp: newHp },
             };
         }),
 }));
