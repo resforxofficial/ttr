@@ -4,7 +4,7 @@ import { josa } from "es-hangul";
 // 레벨별 적 이름
 const enemyNames = ["슬라임", "고블린", "오크", "트롤", "마법사", "드래곤"];
 const getEnemyName = (level: number) =>
-    enemyNames[level - 1] || `보스 Lv.${level}`;
+    enemyNames[level - 1] || `보스`;
 
 interface Entity {
     hp: number;
