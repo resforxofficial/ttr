@@ -57,8 +57,8 @@ const MAX_LOGS = 50;
 
 export const useBattleStore = create<T>((set) => ({
     player: {
-        hp: 50,
-        maxHp: 50,
+        hp: 100,
+        maxHp: 100,
         attack: 5,
         attackSpeed: 1000,
         statPoints: 0,
@@ -127,7 +127,7 @@ export const useBattleStore = create<T>((set) => ({
                     name: getEnemyName(nextLevel),
                     maxHp: 220 + nextLevel * 5,
                     hp: 220 + nextLevel * 5,
-                    attack: (3 + nextLevel) * 2,
+                    attack: (2 + nextLevel) * 2,
                     attackSpeed: 1000,
                 };
 

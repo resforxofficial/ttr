@@ -127,8 +127,6 @@ export default function RealTimeBattle() {
                 </div>
             </div>
             <br />
-            <br />
-            <br />
             <div className="info-navbar">
                 <button
                     className={activeTab === "stats" ? "active" : ""}
