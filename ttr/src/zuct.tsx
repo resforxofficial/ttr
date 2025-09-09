@@ -5,6 +5,30 @@ import { josa } from "es-hangul";
 const enemyNames = ["슬라임", "고블린", "오크", "트롤", "마법사", "드래곤"];
 const getEnemyName = (level: number) => enemyNames[level - 1] || `보스`;
 
+interface Lifesteal {
+    value: number;
+    time: number;
+}
+
+interface GameItem {
+    id: string; // 고유 아이템 ID
+    name: string; // 이름
+    type: "sub" | "complete"; // 타입
+    stats?: { attack?: number; hp?: number, attackSpeed?: number, lifesteal?: Lifesteal }; // 스탯 보너스
+    recipe?: string[]; // 조합식 (하위 아이템 ID 배열)
+    description?: string; // 설명
+    cost?: number;
+}
+
+export const ITEMS: GameItem[] = [
+    {
+        id: "scythe",
+        name: "사슬낫",
+        type: "sub",
+        stats: { attack: 7, lifesteal: { value: 2, time: 7 } }
+    }
+];
+
 interface Entity {
     hp: number;
     maxHp: number;
@@ -245,10 +269,11 @@ export const useBattleStore = create<T>((set) => ({
                 player: { ...state.player, hp: newHp },
             };
         }),
-        
+
     upgradeRegen: () =>
         set((state) => {
-            if (state.player.statPoints <= 0 || state.player.regenLevel >= 5) return state;
+            if (state.player.statPoints <= 0 || state.player.regenLevel >= 5)
+                return state;
             const newLogs = [...state.logs, `플레이어 초당 회복량 +1`];
             return {
                 ...state,
