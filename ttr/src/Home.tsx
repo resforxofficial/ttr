@@ -15,7 +15,7 @@ export default function RealTimeBattle() {
         healPlayer,
         upgradeRegen,
     } = useBattleStore();
-    const [activeTab, setActiveTab] = useState<"stats" | "inventory">("stats");
+    const [activeTab, setActiveTab] = useState<"stats" | "shop">("stats");
 
     // 플레이어 자동 공격
     useEffect(() => {
@@ -135,8 +135,8 @@ export default function RealTimeBattle() {
                     스탯
                 </button>
                 <button
-                    className={activeTab === "inventory" ? "active" : ""}
-                    onClick={() => setActiveTab("inventory")}
+                    className={activeTab === "shop" ? "active" : ""}
+                    onClick={() => setActiveTab("shop")}
                 >
                     인벤토리
                 </button>
@@ -158,7 +158,7 @@ export default function RealTimeBattle() {
                     </div>
                 )}
 
-                {activeTab === "inventory" && (
+                {activeTab === "shop" && (
                     <div className="info-block">
                         <h4>인벤토리</h4>
                         <p>아이템 리스트가 여기 표시됩니다.</p>
