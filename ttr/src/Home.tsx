@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useBattleStore } from "./zuct";
 
 export default function RealTimeBattle() {
@@ -15,7 +15,6 @@ export default function RealTimeBattle() {
         healPlayer,
         upgradeRegen,
     } = useBattleStore();
-    const [activeTab, setActiveTab] = useState<"stats" | "shop">("stats");
 
     // 플레이어 자동 공격
     useEffect(() => {
@@ -127,44 +126,6 @@ export default function RealTimeBattle() {
                 </div>
             </div>
             <br />
-            <div className="info-navbar">
-                <button
-                    className={activeTab === "stats" ? "active" : ""}
-                    onClick={() => setActiveTab("stats")}
-                >
-                    스탯
-                </button>
-                <button
-                    className={activeTab === "shop" ? "active" : ""}
-                    onClick={() => setActiveTab("shop")}
-                >
-                    인벤토리
-                </button>
-            </div>
-            <div className="info-wrapper">
-                {activeTab === "stats" && (
-                    <div className="info-block">
-                        <h4>플레이어 정보</h4>
-                        <p>
-                            공격력: {player.attack} (Lv.{player.attackLevel})
-                        </p>
-                        <p>
-                            최대 체력: {player.maxHp} (Lv.{player.maxHpLevel})
-                        </p>
-                        <p>
-                            초당 회복: {player.regen} (Lv.{player.regenLevel})
-                        </p>
-                        <p>남은 스탯 포인트: {player.statPoints}</p>
-                    </div>
-                )}
-
-                {activeTab === "shop" && (
-                    <div className="info-block">
-                        <h4>인벤토리</h4>
-                        <p>아이템 리스트가 여기 표시됩니다.</p>
-                    </div>
-                )}
-            </div>
         </div>
     );
 }

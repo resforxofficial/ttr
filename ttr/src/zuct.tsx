@@ -5,30 +5,6 @@ import { josa } from "es-hangul";
 const enemyNames = ["슬라임", "고블린", "오크", "트롤", "마법사", "드래곤"];
 const getEnemyName = (level: number) => enemyNames[level - 1] || `보스`;
 
-interface Lifesteal {
-    value: number;
-    time: number;
-}
-
-interface GameItem {
-    id: string; // 고유 아이템 ID
-    name: string; // 이름
-    type: "sub" | "complete"; // 타입
-    stats?: { attack?: number; hp?: number, attackSpeed?: number, lifesteal?: Lifesteal }; // 스탯 보너스
-    recipe?: string[]; // 조합식 (하위 아이템 ID 배열)
-    description?: string; // 설명
-    cost?: number;
-}
-
-export const ITEMS: GameItem[] = [
-    {
-        id: "scythe",
-        name: "사슬낫",
-        type: "sub",
-        stats: { attack: 7, lifesteal: { value: 2, time: 7 } }
-    }
-];
-
 interface Entity {
     hp: number;
     maxHp: number;
@@ -60,22 +36,7 @@ interface BattleState {
     upgradeRegen: () => void;
 }
 
-interface InventoryItem {
-    id: string;
-    name: string;
-    type: "sub" | "complete";
-    quantity: number;
-    description?: string;
-}
-
-interface InventoryState {
-    inventory: InventoryItem[];
-    addItem: (item: Omit<InventoryItem, "quantity">, quantity?: number) => void;
-    removeItem: (id: string, quantity?: number) => void;
-    clearInventory: () => void;
-}
-
-type T = BattleState & InventoryState;
+type T = BattleState;
 
 const MAX_LOGS = 50;
 
@@ -103,35 +64,6 @@ export const useBattleStore = create<T>((set) => ({
     },
     isGameOver: false,
     logs: ["게임을 시작합니다!"],
-    inventory: [],
-
-    addItem: (item, quantity = 1) =>
-        set((state) => {
-            const existing = state.inventory.find((i) => i.id === item.id);
-            if (existing) {
-                return {
-                    inventory: state.inventory.map((i) =>
-                        i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
-                    ),
-                };
-            }
-            return {
-                inventory: [...state.inventory, { ...item, quantity }],
-            };
-        }),
-
-    removeItem: (id, quantity = 1) =>
-        set((state) => {
-            return {
-                inventory: state.inventory
-                    .map((i) =>
-                        i.id === id ? { ...i, quantity: i.quantity - quantity } : i
-                    )
-                    .filter((i) => i.quantity > 0),
-            };
-        }),
-
-    clearInventory: () => set({ inventory: [] }),
 
     attackEnemy: () =>
         set((state) => {
